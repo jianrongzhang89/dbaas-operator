@@ -1,0 +1,19 @@
+apiVersion: dbaas.redhat.com/v1alpha1
+kind: DBaaSInstance
+metadata:
+  name: dbaasinstance-sample
+spec:
+  inventoryRef:
+    namespace: openshift-dbaas-operator
+    name: atlas-inventory
+  name: malty-zebra-725
+  provider: aws
+  region: us-east-1
+  otherInstanceParams:
+    HighAvail: 'false'
+    PGMajorVer: '14'
+    Plan: hobby-2
+    Storage: '100'
+    TeamID: vp6hlxjcl5g73furjiztcrr2vi
+
+

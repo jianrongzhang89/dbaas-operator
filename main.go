@@ -134,6 +134,13 @@ func main() {
 		setupLog.Error(err, "unable to create controller", "controller", "DBaaSInventory")
 		os.Exit(1)
 	}
+	instanceCtrl, err := (&controllers.DBaaSInstanceReconciler{
+		DBaaSReconciler: DBaaSReconciler,
+	}).SetupWithManager(mgr)
+	if err != nil {
+		setupLog.Error(err, "unable to create controller", "controller", "DBaaSInstance")
+		os.Exit(1)
+	}
 	if err = (&controllers.DBaaSDefaultTenantReconciler{
 		DBaaSReconciler: DBaaSReconciler,
 	}).SetupWithManager(mgr); err != nil {
@@ -144,6 +151,7 @@ func main() {
 		DBaaSReconciler: DBaaSReconciler,
 		ConnectionCtrl:  connectionCtrl,
 		InventoryCtrl:   inventoryCtrl,
+		InstanceCtrl:    instanceCtrl,
 	}).SetupWithManager(mgr)
 	if err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "DBaaSProvider")

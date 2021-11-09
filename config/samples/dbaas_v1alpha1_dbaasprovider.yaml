@@ -15,6 +15,7 @@ spec:
       mediatype: image/png
   inventoryKind: MongoDBAtlasInventory
   connectionKind: MongoDBAtlasConnection
+  instanceKind: MongoDBAtlasInstance
   credentialFields:
     - key: organizationId
       displayName: Organization ID
@@ -28,3 +29,29 @@ spec:
       displayName: Organization Private Key
       type: maskedstring
       required: true
+  allowsFreeTrial: true
+  instanceParameterSpecs:
+    - name: clusterName
+      displayName: Cluster Name
+      type: string
+      required: true
+    - name: ProjectName
+      displayName: Atlas Project Name
+      type: string
+      required: true
+    - name: clusterType
+      displayName: Cluster Type
+      type: string
+      required: false
+    - name: providerName
+      displayName: Cloud Provider
+      type: string
+      required: false
+    - name: regionName
+      displayName: Cloud Region
+      type: string
+      required: false
+    - name: instanceSizeName
+      displayName: Cluster Size Name
+      type: string
+      required: false

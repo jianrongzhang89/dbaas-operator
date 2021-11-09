@@ -47,9 +47,12 @@ var _ = Describe("DBaaSProvider controller", func() {
 				Provider: v1alpha1.DatabaseProvider{
 					Name: "test-provider",
 				},
-				InventoryKind:    testInventoryKind,
-				ConnectionKind:   testConnectionKind,
-				CredentialFields: []v1alpha1.CredentialField{},
+				InventoryKind:          testInventoryKind,
+				ConnectionKind:         testConnectionKind,
+				InstanceKind:           testInstanceKind,
+				CredentialFields:       []v1alpha1.CredentialField{},
+				AllowsFreeTrial:        false,
+				InstanceParameterSpecs: []v1alpha1.InstanceParameterSpec{},
 			},
 		}
 		BeforeEach(assertResourceCreation(provider))
@@ -92,6 +95,7 @@ var _ = Describe("DBaaSProvider controller", func() {
 
 				updatedProvider.Spec.InventoryKind = "CrunchyBridgeInventory"
 				updatedProvider.Spec.ConnectionKind = "CrunchyBridgeConnection"
+				updatedProvider.Spec.InstanceKind = "CrunchyBridgeInstance"
 				Expect(dRec.Update(ctx, updatedProvider)).Should(Succeed())
 				Eventually(func() v1alpha1.DBaaSProviderSpec {
 					pProvider := &v1alpha1.DBaaSProvider{}
@@ -134,9 +138,12 @@ var _ = Describe("DBaaSProvider controller", func() {
 						Provider: v1alpha1.DatabaseProvider{
 							Name: "test-provider",
 						},
-						InventoryKind:    testInventoryKind,
-						ConnectionKind:   testConnectionKind,
-						CredentialFields: []v1alpha1.CredentialField{},
+						InventoryKind:          testInventoryKind,
+						ConnectionKind:         testConnectionKind,
+						InstanceKind:           testInstanceKind,
+						CredentialFields:       []v1alpha1.CredentialField{},
+						AllowsFreeTrial:        false,
+						InstanceParameterSpecs: []v1alpha1.InstanceParameterSpec{},
 					},
 				}
 				assertResourceCreation(provider)
