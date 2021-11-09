@@ -47,6 +47,7 @@ const (
 	testProviderName   = "mongodb-atlas"
 	testInventoryKind  = "MongoDBAtlasInventory"
 	testConnectionKind = "MongoDBAtlasConnection"
+	testInstanceKind   = "MongoDBAtlasInstance"
 )
 
 var defaultProvider = &v1alpha1.DBaaSProvider{
@@ -57,9 +58,12 @@ var defaultProvider = &v1alpha1.DBaaSProvider{
 		Provider: v1alpha1.DatabaseProvider{
 			Name: testProviderName,
 		},
-		InventoryKind:    testInventoryKind,
-		ConnectionKind:   testConnectionKind,
-		CredentialFields: []v1alpha1.CredentialField{},
+		InventoryKind:          testInventoryKind,
+		ConnectionKind:         testConnectionKind,
+		InstanceKind:           testInstanceKind,
+		CredentialFields:       []v1alpha1.CredentialField{},
+		AllowsFreeTrial:        false,
+		InstanceParameterSpecs: []v1alpha1.InstanceParameterSpec{},
 	},
 }
 
@@ -153,6 +157,13 @@ func assertProviderResourceCreated(object client.Object, providerResourceKind st
 			Expect(&providerConnection.Spec).Should(Equal(DBaaSResourceSpec))
 			Expect(len(providerConnection.GetOwnerReferences())).Should(Equal(1))
 			Expect(providerConnection.GetOwnerReferences()[0].Name).Should(Equal(object.GetName()))
+		case *v1alpha1.DBaaSInstance:
+			providerInstance := &v1alpha1.DBaaSProviderInstance{}
+			err := json.Unmarshal(bytes, providerInstance)
+			Expect(err).NotTo(HaveOccurred())
+			Expect(&providerInstance.Spec).Should(Equal(DBaaSResourceSpec))
+			Expect(len(providerInstance.GetOwnerReferences())).Should(Equal(1))
+			Expect(providerInstance.GetOwnerReferences()[0].Name).Should(Equal(object.GetName()))
 		default:
 			_ = v.GetName() // to avoid syntax error
 			Fail("invalid test object")
@@ -176,6 +187,9 @@ func assertDBaaSResourceStatusUpdated(object client.Object, status metav1.Condit
 				return len(dbaasConds) > 0 && dbaasConds[0].Status == status && dbaasConds[0].Reason == reason, nil
 			case *v1alpha1.DBaaSConnection:
 				dbaasConds, _ := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSConnectionReadyType)
+				return len(dbaasConds) > 0 && dbaasConds[0].Status == status && dbaasConds[0].Reason == reason, nil
+			case *v1alpha1.DBaaSInstance:
+				dbaasConds, _ := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSInstanceReadyType)
 				return len(dbaasConds) > 0 && dbaasConds[0].Status == status && dbaasConds[0].Reason == reason, nil
 			default:
 				Fail("invalid test object")
@@ -238,6 +252,10 @@ func assertDBaaSResourceProviderStatusUpdated(object client.Object, inventoryDBa
 				assertInventoryDBaaSStatus(v.Spec.InventoryRef.Name, v.Spec.InventoryRef.Namespace, inventoryDBaaSStatus)()
 				_, conds := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSConnectionReadyType)
 				return len(conds), nil
+			case *v1alpha1.DBaaSInstance:
+				assertInventoryDBaaSStatus(v.Spec.InventoryRef.Name, v.Spec.InventoryRef.Namespace, inventoryDBaaSStatus)()
+				_, conds := splitStatusConditions(v.Status.Conditions, v1alpha1.DBaaSInstanceReadyType)
+				return len(conds), nil
 			default:
 				Fail("invalid test object")
 				return -1, err
@@ -248,6 +266,8 @@ func assertDBaaSResourceProviderStatusUpdated(object client.Object, inventoryDBa
 			assertInventoryStatus(v, v1alpha1.DBaaSInventoryReadyType, inventoryDBaaSStatus, providerResourceStatus)()
 		case *v1alpha1.DBaaSConnection:
 			assertConnectionStatus(v, v1alpha1.DBaaSConnectionReadyType, providerResourceStatus)()
+		case *v1alpha1.DBaaSInstance:
+			assertInstanceStatus(v, v1alpha1.DBaaSInstanceReadyType, providerResourceStatus)()
 		default:
 			Fail("invalid test object")
 		}
@@ -299,6 +319,23 @@ func assertConnectionDBaaSStatus(name, namespace string, dbaasStatus metav1.Cond
 	}
 }
 
+func assertInstanceDBaaSStatus(name, namespace string, dbaasStatus metav1.ConditionStatus) func() {
+	return func() {
+		updatedConn := &v1alpha1.DBaaSInstance{}
+		Eventually(func() (int, error) {
+			err := dRec.Get(ctx, types.NamespacedName{Name: name, Namespace: namespace}, updatedConn)
+			if err != nil {
+				return -1, err
+			}
+			cond := apimeta.FindStatusCondition(updatedConn.Status.Conditions, v1alpha1.DBaaSInstanceReadyType)
+			if cond != nil && cond.Status == dbaasStatus {
+				return 0, nil
+			}
+			return 0, nil
+		}, timeout, interval).Should(Equal(0))
+	}
+}
+
 func assertInventoryStatus(inv *v1alpha1.DBaaSInventory, condType string, dbaasStatus metav1.ConditionStatus, providerResourceStatus interface{}) func() {
 	return func() {
 		status := inv.Status.DeepCopy()
@@ -321,6 +358,16 @@ func assertConnectionStatus(conn *v1alpha1.DBaaSConnection, condType string, pro
 	}
 }
 
+func assertInstanceStatus(conn *v1alpha1.DBaaSInstance, condType string, providerResourceStatus interface{}) func() {
+	return func() {
+		assertInstanceDBaaSStatus(conn.Name, conn.Namespace, metav1.ConditionTrue)()
+		status := conn.Status.DeepCopy()
+		_, providerConds := splitStatusConditions(status.Conditions, condType)
+		status.Conditions = providerConds
+		Expect(status).Should(Equal(providerResourceStatus))
+	}
+}
+
 func assertProviderResourceSpecUpdated(object client.Object, providerResourceKind string, DBaaSResourceSpec interface{}) func() {
 	return func() {
 		By("updating the DBaaS resource spec")
@@ -334,6 +381,8 @@ func assertProviderResourceSpecUpdated(object client.Object, providerResourceKin
 				v.Spec.DBaaSInventorySpec = *DBaaSResourceSpec.(*v1alpha1.DBaaSInventorySpec)
 			case *v1alpha1.DBaaSConnection:
 				v.Spec = *DBaaSResourceSpec.(*v1alpha1.DBaaSConnectionSpec)
+			case *v1alpha1.DBaaSInstance:
+				v.Spec = *DBaaSResourceSpec.(*v1alpha1.DBaaSInstanceSpec)
 			default:
 				Fail("invalid test object")
 			}
@@ -374,6 +423,11 @@ func assertProviderResourceSpecUpdated(object client.Object, providerResourceKin
 				err := json.Unmarshal(bytes, providerConnection)
 				Expect(err).NotTo(HaveOccurred())
 				return reflect.DeepEqual(&providerConnection.Spec, DBaaSResourceSpec)
+			case *v1alpha1.DBaaSInstance:
+				providerInstance := &v1alpha1.DBaaSProviderInstance{}
+				err := json.Unmarshal(bytes, providerInstance)
+				Expect(err).NotTo(HaveOccurred())
+				return reflect.DeepEqual(&providerInstance.Spec, DBaaSResourceSpec)
 			default:
 				_ = v.GetName() // to avoid syntax error
 				Fail("invalid test object")

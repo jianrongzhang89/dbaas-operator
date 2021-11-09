@@ -35,6 +35,7 @@ var _ = Describe("DBaaSProvider controller", func() {
 	BeforeEach(func() {
 		iCtrl.reset()
 		cCtrl.reset()
+		inCtrl.reset()
 	})
 
 	Describe("trigger reconcile", func() {
@@ -47,9 +48,12 @@ var _ = Describe("DBaaSProvider controller", func() {
 				Provider: v1alpha1.DatabaseProvider{
 					Name: "test-provider",
 				},
-				InventoryKind:    testInventoryKind,
-				ConnectionKind:   testConnectionKind,
-				CredentialFields: []v1alpha1.CredentialField{},
+				InventoryKind:          testInventoryKind,
+				ConnectionKind:         testConnectionKind,
+				InstanceKind:           testInstanceKind,
+				CredentialFields:       []v1alpha1.CredentialField{},
+				AllowsFreeTrial:        false,
+				InstanceParameterSpecs: []v1alpha1.InstanceParameterSpec{},
 			},
 		}
 		BeforeEach(assertResourceCreation(provider))
@@ -71,8 +75,15 @@ var _ = Describe("DBaaSProvider controller", func() {
 					Kind:    testConnectionKind,
 				})
 				cOwner := &v1alpha1.DBaaSConnection{}
+				inSrc := &unstructured.Unstructured{}
+				inSrc.SetGroupVersionKind(schema.GroupVersionKind{
+					Group:   v1alpha1.GroupVersion.Group,
+					Version: v1alpha1.GroupVersion.Version,
+					Kind:    testInstanceKind,
+				})
+				inOwner := &v1alpha1.DBaaSInstance{}
 
-				assertWatch(iSrc, iOwner, cSrc, cOwner)
+				assertWatch(iSrc, iOwner, cSrc, cOwner, inSrc, inOwner)
 			})
 		})
 
@@ -80,6 +91,7 @@ var _ = Describe("DBaaSProvider controller", func() {
 			It("should make DBaaSInventory and DBaaSConnection watch the provider inventory and connection", func() {
 				iCtrl.reset()
 				cCtrl.reset()
+				inCtrl.reset()
 
 				updatedProvider := &v1alpha1.DBaaSProvider{
 					ObjectMeta: metav1.ObjectMeta{
@@ -92,6 +104,7 @@ var _ = Describe("DBaaSProvider controller", func() {
 
 				updatedProvider.Spec.InventoryKind = "CrunchyBridgeInventory"
 				updatedProvider.Spec.ConnectionKind = "CrunchyBridgeConnection"
+				updatedProvider.Spec.InstanceKind = "CrunchyBridgeInstance"
 				Expect(dRec.Update(ctx, updatedProvider)).Should(Succeed())
 				Eventually(func() v1alpha1.DBaaSProviderSpec {
 					pProvider := &v1alpha1.DBaaSProvider{}
@@ -116,8 +129,15 @@ var _ = Describe("DBaaSProvider controller", func() {
 					Kind:    "CrunchyBridgeConnection",
 				})
 				cOwner := &v1alpha1.DBaaSConnection{}
+				inSrc := &unstructured.Unstructured{}
+				inSrc.SetGroupVersionKind(schema.GroupVersionKind{
+					Group:   v1alpha1.GroupVersion.Group,
+					Version: v1alpha1.GroupVersion.Version,
+					Kind:    "CrunchyBridgeInstance",
+				})
+				inOwner := &v1alpha1.DBaaSInstance{}
 
-				assertWatch(iSrc, iOwner, cSrc, cOwner)
+				assertWatch(iSrc, iOwner, cSrc, cOwner, inSrc, inOwner)
 			})
 		})
 	})
@@ -134,15 +154,19 @@ var _ = Describe("DBaaSProvider controller", func() {
 						Provider: v1alpha1.DatabaseProvider{
 							Name: "test-provider",
 						},
-						InventoryKind:    testInventoryKind,
-						ConnectionKind:   testConnectionKind,
-						CredentialFields: []v1alpha1.CredentialField{},
+						InventoryKind:          testInventoryKind,
+						ConnectionKind:         testConnectionKind,
+						InstanceKind:           testInstanceKind,
+						CredentialFields:       []v1alpha1.CredentialField{},
+						AllowsFreeTrial:        false,
+						InstanceParameterSpecs: []v1alpha1.InstanceParameterSpec{},
 					},
 				}
 				assertResourceCreation(provider)
 
 				iCtrl.reset()
 				cCtrl.reset()
+				inCtrl.reset()
 				assertResourceDeletion(provider)
 
 				assertNotWatch()
@@ -151,7 +175,9 @@ var _ = Describe("DBaaSProvider controller", func() {
 	})
 })
 
-func assertWatch(iSrc client.Object, iOwner runtime.Object, cSrc client.Object, cOwner runtime.Object) {
+func assertWatch(iSrc client.Object, iOwner runtime.Object,
+	cSrc client.Object, cOwner runtime.Object,
+	inSrc client.Object, inOwner runtime.Object) {
 	select {
 	case s := <-iCtrl.source:
 		Expect(s).Should(Equal(iSrc))
@@ -176,6 +202,18 @@ func assertWatch(iSrc client.Object, iOwner runtime.Object, cSrc client.Object, 
 	case <-time.After(timeout):
 		Fail("failed to watch with the expected owner")
 	}
+	select {
+	case s := <-inCtrl.source:
+		Expect(s).Should(Equal(inSrc))
+	case <-time.After(timeout):
+		Fail("failed to watch with the expected source")
+	}
+	select {
+	case o := <-inCtrl.owner:
+		Expect(o).Should(Equal(inOwner))
+	case <-time.After(timeout):
+		Fail("failed to watch with the expected owner")
+	}
 }
 
 func assertNotWatch() {
@@ -184,4 +222,7 @@ func assertNotWatch() {
 
 	Expect(len(cCtrl.source)).Should(Equal(0))
 	Expect(len(cCtrl.owner)).Should(Equal(0))
+
+	Expect(len(inCtrl.source)).Should(Equal(0))
+	Expect(len(inCtrl.owner)).Should(Equal(0))
 }

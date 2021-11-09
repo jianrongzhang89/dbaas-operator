@@ -101,7 +101,7 @@ func (r *DBaaSPlatformReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			// CR deleted since request queued, child objects getting GC'd, no requeue
-			logger.Info("DBaaSPlatform CR not found, has been deleted")
+			logger.V(1).Info("DBaaSPlatform CR not found, has been deleted")
 			return ctrl.Result{}, nil
 		}
 		// error fetching DBaaSPlatform instance, requeue and try again
