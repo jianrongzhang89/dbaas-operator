@@ -36,6 +36,10 @@ spec:
           spec:
             description: DBaaSProviderSpec defines the desired state of DBaaSProvider
             properties:
+              allowsFreeTrial:
+                description: AllowsFreeTrial indicates whether the provider provides
+                  free trials
+                type: boolean
               connectionKind:
                 description: ConnectionKind is the name of the connection resource
                   (CRD) defined by the provider
@@ -63,6 +67,63 @@ spec:
                   - key
                   - required
                   - type
+                  type: object
+                type: array
+              instanceKind:
+                description: InstanceKind is the name of the instance resource (CRD)
+                  defined by the provider for provisioning
+                type: string
+              instanceParameterSpecs:
+                description: InstanceParameterSpecs  indicates what parameters to
+                  collect from UX & how to display fields in a form in order to provision
+                  an instance
+                items:
+                  properties:
+                    displayName:
+                      description: A user-friendly name for this parameter
+                      type: string
+                    isKeyValue:
+                      description: If key-value pairs are used or not
+                      type: boolean
+                    name:
+                      description: The name for this field
+                      type: string
+                    required:
+                      description: If this field is required or not
+                      type: boolean
+                    type:
+                      description: The type of parameter (string, maskedstring, integer,
+                        boolean)
+                      type: string
+                  required:
+                  - displayName
+                  - isKeyValue
+                  - name
+                  - required
+                  - type
+                  type: object
+                type: array
+              instanceParameterValues:
+                description: InstanceParameterValues  indicates what parameter values
+                  are displayed in UX for users to select
+                items:
+                  properties:
+                    isDefault:
+                      type: boolean
+                    key:
+                      type: string
+                    name:
+                      type: string
+                    subValues:
+                      description: Dependent parameter values (optional)
+                      items: {}
+                      type: array
+                    value:
+                      type: string
+                  required:
+                  - isDefault
+                  - name
+                  - value
                   type: object
                 type: array
               inventoryKind:
@@ -104,8 +165,12 @@ spec:
                 - name
                 type: object
             required:
+            - allowsFreeTrial
             - connectionKind
             - credentialFields
+            - instanceKind
+            - instanceParameterSpecs
+            - instanceParameterValues
             - inventoryKind
             - provider
             type: object
