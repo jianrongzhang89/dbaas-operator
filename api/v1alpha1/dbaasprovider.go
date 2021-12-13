@@ -94,18 +94,18 @@ type InstanceParameterSpec struct {
 
 	// If this field is required or not
 	Required bool `json:"required"`
-
-	// If key-value pairs are used or not
-	IsKeyValue bool `json:"isKeyValue"`
 }
 
 type InstanceParameterValue struct {
-	Name      string `json:"name"`
-	Key       string `json:"key,omitempty"`
-	Value     string `json:"value"`
-	IsDefault bool   `json:"isDefault"`
-	// Dependent parameter values (optional)
-	SubValues []InstanceParameterValue `json:"subValues,omitempty"`
+	// Unique ID for the value
+	ID           int    `json:"id"`
+	Name         string `json:"name"`
+	Value        string `json:"value"`
+	DisplayValue string `json:"displayValue,omitempty"`
+	// Indicate whether this is a default for the same parent value
+	IsDefault bool `json:"isDefault"`
+	// Parent parameter value
+	Parent int `json:"parent,omitempty"`
 }
 
 // DBaaSInventorySpec defines the Inventory Spec to be used by provider operators

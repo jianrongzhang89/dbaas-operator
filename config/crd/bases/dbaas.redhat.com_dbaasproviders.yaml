@@ -82,9 +82,6 @@ spec:
                     displayName:
                       description: A user-friendly name for this parameter
                       type: string
-                    isKeyValue:
-                      description: If key-value pairs are used or not
-                      type: boolean
                     name:
                       description: The name for this field
                       type: string
@@ -97,7 +94,6 @@ spec:
                       type: string
                   required:
                   - displayName
-                  - isKeyValue
                   - name
                   - required
                   - type
@@ -108,19 +104,24 @@ spec:
                   are displayed in UX for users to select
                 items:
                   properties:
-                    isDefault:
-                      type: boolean
-                    key:
+                    displayValue:
                       type: string
+                    id:
+                      description: Unique ID for the value
+                      type: integer
+                    isDefault:
+                      description: Indicate whether this is a default for the same
+                        parent value
+                      type: boolean
                     name:
                       type: string
-                    subValues:
-                      description: Dependent parameter values (optional)
-                      items: {}
-                      type: array
+                    parent:
+                      description: Parent parameter value
+                      type: integer
                     value:
                       type: string
                   required:
+                  - id
                   - isDefault
                   - name
                   - value
