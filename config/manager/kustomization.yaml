@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: quay.io/jianrzha/dbaas-operator
-  newTag: 0.5.2
+  newTag: 0.5.3

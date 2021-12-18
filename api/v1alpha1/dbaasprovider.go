@@ -27,6 +27,8 @@ const (
 	DBaaSInventoryProviderSyncType  string = "SpecSynced"
 	DBaaSConnectionProviderSyncType string = "ReadyForBinding"
 	DBaaSConnectionReadyType        string = "ConnectionReady"
+	DBaaSInstanceProviderSyncType   string = "ProvisionReady"
+	DBaaSInstanceReadyType          string = "InstanceReady"
 
 	// DBaaS condition reasons
 	Ready                       string = "Ready"
