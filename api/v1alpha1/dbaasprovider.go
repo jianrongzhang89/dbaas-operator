@@ -27,7 +27,7 @@ const (
 	DBaaSInventoryProviderSyncType  string = "SpecSynced"
 	DBaaSConnectionProviderSyncType string = "ReadyForBinding"
 	DBaaSConnectionReadyType        string = "ConnectionReady"
-	DBaaSInstanceProviderSyncType   string = "ProvisionReady"
+	DBaaSInstanceProviderSyncType   string = "ClusterReady"
 	DBaaSInstanceReadyType          string = "InstanceReady"
 
 	// DBaaS condition reasons
@@ -141,6 +141,8 @@ type DBaaSInventorySpec struct {
 	// DBaaSProvider CR (CredentialFields key). It is recommended to place the Secret in a
 	// namespace with limited accessibility.
 	CredentialsRef *NamespacedName `json:"credentialsRef"`
+	// RequestTimestamp request time for inventory status to be refreshed.
+	RequestTimestamp metav1.Time `json:"requestTimestamp,omitempty"`
 }
 
 // DBaaSInventoryStatus defines the Inventory status to be used by provider operators
@@ -149,6 +151,9 @@ type DBaaSInventoryStatus struct {
 
 	// A list of instances returned from querying the DB provider
 	Instances []Instance `json:"instances,omitempty"`
+
+	// ProcessedTimestamp time when the inventory gets refreshed
+	ProcessedTimestamp metav1.Time `json:"processedTimestamp,omitempty"`
 }
 
 type Instance struct {
