@@ -231,7 +231,7 @@ type InstanceParameterSpec struct {
 	Name string `json:"name"`
 
 	// A user-friendly name for this parameter
-	DisplayName string `json:"displayName"`
+	DisplayName string `json:"displayName,omitempty"`
 
 	// The type of parameter (string, maskedstring, integer, boolean)
 	Type string `json:"type"`
@@ -240,5 +240,5 @@ type InstanceParameterSpec struct {
 	Required bool `json:"required"`
 
 	// Default value for this field
-	DefaultValue string `json:"defaultValue"`
+	DefaultValue string `json:"defaultValue,omitempty"`
 }

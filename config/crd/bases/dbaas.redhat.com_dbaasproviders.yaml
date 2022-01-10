@@ -96,8 +96,6 @@ spec:
                         boolean)
                       type: string
                   required:
-                  - defaultValue
-                  - displayName
                   - name
                   - required
                   - type

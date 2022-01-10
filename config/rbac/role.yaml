@@ -46,6 +46,7 @@ rules:
   - consoleplugins
   verbs:
   - create
+  - delete
   - get
   - list
   - update
