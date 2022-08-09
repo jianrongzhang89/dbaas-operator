@@ -58,10 +58,10 @@ func (r *DBaaSConnection) ValidateDelete() error {
 }
 
 func (r *DBaaSConnection) validateUpdateDBaaSConnectionSpec(old *DBaaSConnection) *field.Error {
-	if r.Spec.InstanceID != old.Spec.InstanceID {
-		return field.Invalid(field.NewPath("spec").Child("instanceID"), r.Spec.InstanceID, "instanceID is immutable")
-	}
-
+	/*	if r.Spec.InstanceID != old.Spec.InstanceID {
+			return field.Invalid(field.NewPath("spec").Child("instanceID"), r.Spec.InstanceID, "instanceID is immutable")
+		}
+	*/
 	if !reflect.DeepEqual(r.Spec.InventoryRef, old.Spec.InventoryRef) {
 		return field.Invalid(field.NewPath("spec").Child("inventoryRef"), r.Spec.InventoryRef, "inventoryRef is immutable")
 	}

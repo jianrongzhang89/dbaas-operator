@@ -39,7 +39,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryRefName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			InstanceID: &instanceID,
 		}
 		createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 			ObjectMeta: metav1.ObjectMeta{
@@ -79,7 +79,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			InstanceID: &instanceID,
 		}
 		createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 			ObjectMeta: metav1.ObjectMeta{
@@ -147,7 +147,7 @@ var _ = Describe("DBaaSConnection controller with errors", func() {
 				Name:      inventoryName,
 				Namespace: testNamespace,
 			},
-			InstanceID: instanceID,
+			InstanceID: &instanceID,
 		}
 		otherNS := v1.Namespace{
 			ObjectMeta: metav1.ObjectMeta{
@@ -248,7 +248,7 @@ var _ = Describe("DBaaSConnection controller - nominal", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					InstanceID: &instanceID,
 				}
 				createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -326,12 +326,13 @@ var _ = Describe("DBaaSConnection controller - nominal", func() {
 				})
 
 				Context("when updating DBaaSConnection spec", func() {
+					instanceID := "updated-test-instanceID"
 					DBaaSConnectionSpec := &v1alpha1.DBaaSConnectionSpec{
 						InventoryRef: v1alpha1.NamespacedName{
 							Name:      inventoryRefName,
 							Namespace: testNamespace,
 						},
-						InstanceID: "updated-test-instanceID",
+						InstanceID: &instanceID,
 					}
 					It("should update provider connection spec", assertProviderResourceSpecUpdated(createdDBaaSConnection, testConnectionKind, DBaaSConnectionSpec))
 				})
@@ -407,7 +408,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					InstanceID: &instanceID,
 				}
 				createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -442,12 +443,13 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				})
 
 				Context("when updating DBaaSConnection spec", func() {
+					instanceID := "updated-test-instanceID"
 					DBaaSConnectionSpec := &v1alpha1.DBaaSConnectionSpec{
 						InventoryRef: v1alpha1.NamespacedName{
 							Name:      inventoryRefName,
 							Namespace: testNamespace,
 						},
-						InstanceID: "updated-test-instanceID",
+						InstanceID: &instanceID,
 					}
 					It("should update provider connection spec", assertProviderResourceSpecUpdated(createdDBaaSConnection, testConnectionKind, DBaaSConnectionSpec))
 				})
@@ -514,7 +516,7 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 						Name:      inventoryRefName,
 						Namespace: testNamespace,
 					},
-					InstanceID: instanceID,
+					InstanceID: &instanceID,
 				}
 				createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 					ObjectMeta: metav1.ObjectMeta{
@@ -549,12 +551,14 @@ var _ = Describe("DBaaSConnection controller - valid dev namespaces", func() {
 				})
 
 				Context("when updating DBaaSConnection spec", func() {
+					instanceID := "updated-test-instanceID"
 					DBaaSConnectionSpec := &v1alpha1.DBaaSConnectionSpec{
+
 						InventoryRef: v1alpha1.NamespacedName{
 							Name:      inventoryRefName,
 							Namespace: testNamespace,
 						},
-						InstanceID: "updated-test-instanceID",
+						InstanceID: &instanceID,
 					}
 					It("should update provider connection spec", assertProviderResourceSpecUpdated(createdDBaaSConnection, testConnectionKind, DBaaSConnectionSpec))
 				})

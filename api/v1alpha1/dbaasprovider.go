@@ -33,25 +33,28 @@ const (
 	DBaaSPlatformReadyType          string = "PlatformReady"
 
 	// DBaaS condition reasons
-	Ready                          string = "Ready"
-	DBaaSPolicyNotFound            string = "DBaaSPolicyNotFound"
-	DBaaSPolicyNotReady            string = "DBaaSPolicyNotReady"
-	DBaaSProviderNotFound          string = "DBaaSProviderNotFound"
-	DBaaSInventoryNotFound         string = "DBaaSInventoryNotFound"
-	DBaaSInventoryNotReady         string = "DBaaSInventoryNotReady"
-	DBaaSInventoryNotProvisionable string = "DBaaSInventoryNotProvisionable"
-	DBaaSInvalidNamespace          string = "InvalidNamespace"
-	ProviderReconcileInprogress    string = "ProviderReconcileInprogress"
-	ProviderReconcileError         string = "ProviderReconcileError"
-	ProviderParsingError           string = "ProviderParsingError"
-	InstallationInprogress         string = "InstallationInprogress"
-	InstallationCleanup            string = "InstallationCleanup"
+	Ready                           string = "Ready"
+	DBaaSPolicyNotFound             string = "DBaaSPolicyNotFound"
+	DBaaSPolicyNotReady             string = "DBaaSPolicyNotReady"
+	DBaaSProviderNotFound           string = "DBaaSProviderNotFound"
+	DBaaSInventoryNotFound          string = "DBaaSInventoryNotFound"
+	DBaaSInventoryNotReady          string = "DBaaSInventoryNotReady"
+	DBaaSInventoryNotProvisionable  string = "DBaaSInventoryNotProvisionable"
+	DBaaSInstanceNotFound           string = "DBaaSInstanceNotFound"
+	DBaaSInstanceProvisioningFailed string = "DBaaSInstanceProvisioningFailed"
+	DBaaSInvalidNamespace           string = "InvalidNamespace"
+	ProviderReconcileInprogress     string = "ProviderReconcileInprogress"
+	ProviderReconcileError          string = "ProviderReconcileError"
+	ProviderParsingError            string = "ProviderParsingError"
+	InstallationInprogress          string = "InstallationInprogress"
+	InstallationCleanup             string = "InstallationCleanup"
 
 	// DBaaS condition messages
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"
 	MsgProviderCRReconcileInProgress string = "DBaaS Provider Custom Resource reconciliation in progress"
 	MsgInventoryNotReady             string = "Inventory discovery not done"
 	MsgInventoryNotProvisionable     string = "Inventory provisioning not allowed"
+	MsgInstanceProvosioningFailed    string = "Instance provisioning failed"
 	MsgPolicyNotFound                string = "Failed to find an active Policy"
 	MsgPolicyReady                   string = "Policy is active"
 	MsgInvalidNamespace              string = "Invalid connection namespace for the referenced inventory"
@@ -190,7 +193,10 @@ type DBaaSConnectionSpec struct {
 
 	// The ID of the instance to connect to, as seen in the Status of
 	// the referenced DBaaSInventory
-	InstanceID string `json:"instanceID"`
+	InstanceID *string `json:"instanceID,omitempty"`
+
+	// A reference to the relevant DBaaSInstance CR
+	InstanceRef *NamespacedName `json:"instanceRef,omitempty"`
 }
 
 // DBaaSConnectionStatus defines the observed state of DBaaSConnection

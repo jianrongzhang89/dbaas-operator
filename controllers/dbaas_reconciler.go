@@ -287,6 +287,47 @@ func (r *DBaaSReconciler) checkInventory(inventoryRef v1alpha1.NamespacedName, D
 	return
 }
 
+func (r *DBaaSReconciler) checkInstance(instanceRef *v1alpha1.NamespacedName, DBaaSObject client.Object,
+	conditionFn func(string, string), ctx context.Context, logger logr.Logger) (instanceID *string, err error) {
+	instance := &v1alpha1.DBaaSInstance{}
+	if err = r.Get(ctx, types.NamespacedName{Namespace: instanceRef.Namespace, Name: instanceRef.Name}, instance); err != nil {
+		if errors.IsNotFound(err) {
+			logger.Error(err, "DBaaS Instance resource not found for DBaaS Object", "DBaaS Object", DBaaSObject, "DBaaS Inventory", instanceRef)
+			conditionFn(v1alpha1.DBaaSInstanceNotFound, err.Error())
+			if errCond := r.Client.Status().Update(ctx, DBaaSObject); errCond != nil {
+				if errors.IsConflict(errCond) {
+					logger.V(1).Info("DBaaS Object modified", "DBaaS Object", DBaaSObject)
+				} else {
+					logger.Error(errCond, "Error updating the DBaaS Object status", "DBaaS Object", DBaaSObject)
+				}
+			}
+			instanceID = nil
+			return
+		}
+		logger.Error(err, "Error fetching DBaaS Instance resource reference for DBaaS Object", "DBaaS Object", DBaaSObject, "DBaaS Instance", instanceRef)
+		return
+	}
+
+	// The instance must be in ready status before we can move on
+	instCond := apimeta.FindStatusCondition(instance.Status.Conditions, v1alpha1.DBaaSInstanceReadyType)
+	if instCond == nil || (instCond.Status == metav1.ConditionFalse && instCond.Reason == v1alpha1.ProviderReconcileInprogress) {
+		// The instance provisioning is pending or in progress
+		instanceID = nil
+		err = nil
+		return
+	} else if instCond.Status == metav1.ConditionFalse {
+		err = fmt.Errorf("instance provisioning failed for %v: %s", instanceRef, instCond.Reason)
+		logger.Error(err, "Instance provisioing failed", "Instance", instance.Name, "Namespace", instance.Namespace)
+		conditionFn(v1alpha1.DBaaSInstanceProvisioningFailed, v1alpha1.MsgInstanceProvosioningFailed)
+		instanceID = nil
+		return
+	}
+	instanceID = new(string)
+	*instanceID = instance.Status.InstanceID
+	err = nil
+	return
+}
+
 func (r *DBaaSReconciler) checkCredsRefLabel(ctx context.Context, inventory v1alpha1.DBaaSInventory) error {
 	if inventory.Spec.CredentialsRef != nil && len(inventory.Spec.CredentialsRef.Name) != 0 {
 		secret := corev1.Secret{}

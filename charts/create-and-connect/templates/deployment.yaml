@@ -1,0 +1,23 @@
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+    name: {{ include "create-and-connect.fullname" . }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: {{ include "create-and-connect.fullname" . }}
+  template:
+    metadata:
+      labels:
+        name: {{ include "create-and-connect.fullname" . }}
+    spec:
+      containers:
+        - name: {{ include "create-and-connect.fullname" . }}
+          image: quay.io/ecosystem-appeng/mongo-quickstart:0.0.1-SNAPSHOT
+          imagePullPolicy: Always
+          ports:
+            - containerPort: {{ .Values.service.targetPort }}
+              name: {{ .Values.service.portName }}
+              protocol: {{ .Values.service.protocol }}
+  

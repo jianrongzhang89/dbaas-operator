@@ -1,0 +1,8 @@
+apiVersion: dbaas.redhat.com/v1alpha1
+kind: DBaaSPolicy
+metadata:
+  name: cluster
+  namespace: {{ .Values.provider.admNamespace }}
+spec:
+  connectionNamespaces:
+  - '*'

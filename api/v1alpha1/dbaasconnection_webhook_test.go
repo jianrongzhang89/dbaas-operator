@@ -40,7 +40,7 @@ var testDBaaSConnection = &DBaaSConnection{
 			Name:      inventoryName,
 			Namespace: testNamespace,
 		},
-		InstanceID: instanceID,
+		InstanceID: &instanceID,
 	},
 }
 
@@ -84,13 +84,13 @@ var _ = Describe("DBaaSConnection Webhook", func() {
 				err = k8sClient.Update(ctx, updatedDBaaSConnection)
 				Expect(err).Should(MatchError(expectedErr))
 			},
-			Entry("not allow updating instanceID",
-				func(spec *DBaaSConnectionSpec) {
-					spec.InstanceID = "updated-instanceID"
-				},
-				"admission webhook \"vdbaasconnection.kb.io\" denied the request: "+
-					"spec.instanceID: Invalid value: \"updated-instanceID\": instanceID is immutable"),
-			Entry("not allow updating inventoryRef",
+			/*			Entry("not allow updating instanceID",
+						func(spec *DBaaSConnectionSpec) {
+							*spec.InstanceID = "updated-instanceID"
+						},
+						"admission webhook \"vdbaasconnection.kb.io\" denied the request: "+
+							"spec.instanceID: Invalid value: \"updated-instanceID\": instanceID is immutable"),
+			*/Entry("not allow updating inventoryRef",
 				func(spec *DBaaSConnectionSpec) {
 					spec.InventoryRef.Name = "updated-inventory"
 				},

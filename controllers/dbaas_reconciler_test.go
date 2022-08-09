@@ -117,12 +117,13 @@ var _ = Describe("Get install Namespace", func() {
 })
 
 var _ = Describe("Parse provider object", func() {
+	instanceID := "test-instance-id"
 	connectionSpec := v1alpha1.DBaaSConnectionSpec{
 		InventoryRef: v1alpha1.NamespacedName{
 			Name:      "test-inventory",
 			Namespace: "test-namespace",
 		},
-		InstanceID: "test-instance-id",
+		InstanceID: &instanceID,
 	}
 	uConnection := &unstructured.Unstructured{}
 	uConnection.SetUnstructuredContent(make(map[string]interface{}, 1))
@@ -159,12 +160,13 @@ var _ = Describe("Provider object MutateFn", func() {
 		object := &v1alpha1.DBaaSConnection{}
 		providerObject := &unstructured.Unstructured{}
 		providerObject.SetUnstructuredContent(make(map[string]interface{}, 1))
+		instanceID := "test-instance-id"
 		connectionSpec := &v1alpha1.DBaaSConnectionSpec{
 			InventoryRef: v1alpha1.NamespacedName{
 				Name:      "test-inventory",
 				Namespace: "test-namespace",
 			},
-			InstanceID: "test-instance-id",
+			InstanceID: &instanceID,
 		}
 		fn := dRec.providerObjectMutateFn(object, providerObject, connectionSpec)
 		err := fn()
@@ -383,7 +385,7 @@ var _ = Describe("Check inventory", func() {
 					Name:      inventoryName,
 					Namespace: testNamespace,
 				},
-				InstanceID: instanceID,
+				InstanceID: &instanceID,
 			}
 			createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 				ObjectMeta: metav1.ObjectMeta{
@@ -485,7 +487,7 @@ var _ = Describe("Check inventory", func() {
 					Name:      inventoryName,
 					Namespace: testNamespace,
 				},
-				InstanceID: instanceID,
+				InstanceID: &instanceID,
 			}
 			createdDBaaSConnection := &v1alpha1.DBaaSConnection{
 				ObjectMeta: metav1.ObjectMeta{
