@@ -190,7 +190,8 @@ type DBaaSConnectionSpec struct {
 
 	// The ID of the instance to connect to, as seen in the Status of
 	// the referenced DBaaSInventory
-	InstanceID string `json:"instanceID"`
+	// +kubebuilder:validation:Optional
+	InstanceID string `json:"instanceID,omitempty"`
 }
 
 // DBaaSConnectionStatus defines the observed state of DBaaSConnection

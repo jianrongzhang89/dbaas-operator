@@ -1,0 +1,11 @@
+apiVersion: dbaas.redhat.com/v1alpha1
+kind: DBaaSInstance
+metadata:
+  name: {{ include "create-and-connect.fullname" . }}
+spec:
+  inventoryRef:
+    name: {{ include "create-and-connect.fullname" . }}
+    namespace: {{ .Values.provider.admNamespace }}
+  name: {{ .Values.provider.newInstanceName }}
+  otherInstanceParams:
+    projectName: {{ .Values.provider.atlasProject }}
