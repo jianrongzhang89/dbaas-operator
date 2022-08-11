@@ -92,7 +92,7 @@ func (r *DBaaSConnectionReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	} else if !validNS {
 		SetConnectionMetrics(inventory.Spec.ProviderRef.Name, inventory.Name, connection, execution)
-		return ctrl.Result{}, nil
+		return ctrl.Result{Requeue: true}, nil
 	} else {
 		if connection.Spec.InstanceID == nil {
 			if connection.Spec.InstanceRef == nil || len(connection.Spec.InstanceRef.Name) == 0 {
@@ -110,7 +110,7 @@ func (r *DBaaSConnectionReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 			if err != nil {
 				// Instance provisioning failed.
 				logger.Error(err, "Instance provisioning failed")
-				return ctrl.Result{}, err
+				return ctrl.Result{Requeue: true}, err
 			}
 			if instID == nil {
 				// Instance provisioning is still on going. Requeue.

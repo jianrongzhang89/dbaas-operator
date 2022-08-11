@@ -290,7 +290,11 @@ func (r *DBaaSReconciler) checkInventory(inventoryRef v1alpha1.NamespacedName, D
 func (r *DBaaSReconciler) checkInstance(instanceRef *v1alpha1.NamespacedName, DBaaSObject client.Object,
 	conditionFn func(string, string), ctx context.Context, logger logr.Logger) (instanceID *string, err error) {
 	instance := &v1alpha1.DBaaSInstance{}
-	if err = r.Get(ctx, types.NamespacedName{Namespace: instanceRef.Namespace, Name: instanceRef.Name}, instance); err != nil {
+	ns := instanceRef.Namespace
+	if len(ns) == 0 {
+		ns = DBaaSObject.GetNamespace()
+	}
+	if err = r.Get(ctx, types.NamespacedName{Namespace: ns, Name: instanceRef.Name}, instance); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Error(err, "DBaaS Instance resource not found for DBaaS Object", "DBaaS Object", DBaaSObject, "DBaaS Inventory", instanceRef)
 			conditionFn(v1alpha1.DBaaSInstanceNotFound, err.Error())

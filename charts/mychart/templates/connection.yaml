@@ -5,7 +5,7 @@ metadata:
 spec:
   instanceRef:
     name: {{ include "create-and-connect.fullname" . }}
-    namespace: {{ .Values.provider.admNamespace }}
+    namespace: {{ .Release.Namespace }}
   inventoryRef:
     name: {{ include "create-and-connect.fullname" . }}
     namespace: {{ .Values.provider.admNamespace }}

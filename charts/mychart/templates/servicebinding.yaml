@@ -5,7 +5,7 @@ metadata:
 spec:
   application:
     group:                   apps
-    name:                    {{ include "create-and-connect.fullname" . }}
+    name:                    {{ .Values.appName }}
     resource:                deployments
     version:                 v1
   bindAsFiles:             true
