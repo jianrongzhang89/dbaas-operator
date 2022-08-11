@@ -18,6 +18,7 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -77,6 +78,7 @@ func (r *DBaaSConnectionReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		logger.Info("Deployment for Developer Topology view reconciled", "result", res)
 	}
 
+	instanceID := connection.Spec.InstanceID
 	if inventory, validNS, _, err := r.checkInventory(connection.Spec.InventoryRef, &connection, func(reason string, message string) {
 		cond := metav1.Condition{
 			Type:    v1alpha1.DBaaSConnectionReadyType,
@@ -90,15 +92,44 @@ func (r *DBaaSConnectionReconciler) Reconcile(ctx context.Context, req ctrl.Requ
 		return ctrl.Result{}, err
 	} else if !validNS {
 		SetConnectionMetrics(inventory.Spec.ProviderRef.Name, inventory.Name, connection, execution)
-		return ctrl.Result{}, nil
+		return ctrl.Result{Requeue: true}, nil
 	} else {
+		if len(instanceID) == 0 {
+			if connection.Spec.InstanceRef == nil || len(connection.Spec.InstanceRef.Name) == 0 {
+				return ctrl.Result{}, fmt.Errorf("either instanceID or instanceRef must be provided")
+			}
+			instID, err := r.checkInstance(connection.Spec.InstanceRef, &connection, func(reason string, message string) {
+				cond := metav1.Condition{
+					Type:    v1alpha1.DBaaSConnectionReadyType,
+					Status:  metav1.ConditionFalse,
+					Reason:  reason,
+					Message: message,
+				}
+				apimeta.SetStatusCondition(&connection.Status.Conditions, cond)
+			}, ctx, logger)
+			if err != nil {
+				// Instance provisioning failed.
+				logger.Error(err, "Instance provisioning failed")
+				return ctrl.Result{Requeue: true}, err
+			}
+			if len(instID) == 0 {
+				// Instance provisioning is still on going. Requeue.
+				return ctrl.Result{Requeue: true}, nil
+			}
+			// Set the instanceID
+			instanceID = instID
+		}
 		result, err := r.reconcileProviderResource(inventory.Spec.ProviderRef.Name,
 			&connection,
 			func(provider *v1alpha1.DBaaSProvider) string {
 				return provider.Spec.ConnectionKind
 			},
 			func() interface{} {
-				return connection.Spec.DeepCopy()
+				spec := connection.Spec.DeepCopy()
+				if len(instanceID) > 0 {
+					spec.InstanceID = instanceID
+				}
+				return spec
 			},
 			func() interface{} {
 				return &v1alpha1.DBaaSProviderConnection{}

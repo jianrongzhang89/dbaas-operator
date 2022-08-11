@@ -29,6 +29,8 @@ const (
 	DBaaSConnectionProviderSyncType string = "ReadyForBinding"
 	DBaaSInstanceReadyType          string = "InstanceReady"
 	DBaaSInstanceProviderSyncType   string = "ProvisionReady"
+	DBaaSInstanceNotFound           string = "DBaaSInstanceNotFound"
+	DBaaSInstanceProvisioningFailed string = "DBaaSInstanceProvisioningFailed"
 	DBaaSPolicyReadyType            string = "PolicyReady"
 	DBaaSPlatformReadyType          string = "PlatformReady"
 
@@ -50,6 +52,7 @@ const (
 	// DBaaS condition messages
 	MsgProviderCRStatusSyncDone      string = "Provider Custom Resource status sync completed"
 	MsgProviderCRReconcileInProgress string = "DBaaS Provider Custom Resource reconciliation in progress"
+	MsgInstanceProvisioningFailed    string = "Instance provisioning failed"
 	MsgInventoryNotReady             string = "Inventory discovery not done"
 	MsgInventoryNotProvisionable     string = "Inventory provisioning not allowed"
 	MsgPolicyNotFound                string = "Failed to find an active Policy"
@@ -192,6 +195,9 @@ type DBaaSConnectionSpec struct {
 	// the referenced DBaaSInventory
 	// +kubebuilder:validation:Optional
 	InstanceID string `json:"instanceID,omitempty"`
+
+	// A reference to the relevant DBaaSInstance CR
+	InstanceRef *NamespacedName `json:"instanceRef,omitempty"`
 }
 
 // DBaaSConnectionStatus defines the observed state of DBaaSConnection

@@ -40,6 +40,18 @@ spec:
                 description: The ID of the instance to connect to, as seen in the
                   Status of the referenced DBaaSInventory
                 type: string
+              instanceRef:
+                description: A reference to the relevant DBaaSInstance CR
+                properties:
+                  name:
+                    description: The name for object of known type
+                    type: string
+                  namespace:
+                    description: The namespace where object of known type is stored
+                    type: string
+                required:
+                - name
+                type: object
               inventoryRef:
                 description: A reference to the relevant DBaaSInventory CR
                 properties:

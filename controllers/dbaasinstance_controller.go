@@ -74,7 +74,7 @@ func (r *DBaaSInstanceReconciler) Reconcile(ctx context.Context, req ctrl.Reques
 		return ctrl.Result{}, err
 	} else if !validNS {
 		SetInstanceMetrics(inventory.Spec.ProviderRef.Name, inventory.Name, instance, execution)
-		return ctrl.Result{}, nil
+		return ctrl.Result{Requeue: true}, nil
 	} else if !provision {
 		SetInstanceMetrics(inventory.Spec.ProviderRef.Name, inventory.Name, instance, execution)
 		return ctrl.Result{}, nil
