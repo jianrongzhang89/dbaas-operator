@@ -27,3 +27,6 @@ bundle_tmp*
 *~
 .vscode/
 .DS_Store
+
+.odo/env
+.odo/odo-file-index.json
