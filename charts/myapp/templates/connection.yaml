@@ -1,0 +1,11 @@
+apiVersion: dbaas.redhat.com/v1alpha1
+kind: DBaaSConnection
+metadata:
+  name: {{ include "create-and-connect.fullname" . }}
+spec:
+  instanceRef:
+    name: {{ include "create-and-connect.fullname" . }}
+    namespace: {{ .Release.Namespace }}
+  inventoryRef:
+    name: {{ include "create-and-connect.fullname" . }}
+    namespace: {{ .Values.provider.admNamespace }}
