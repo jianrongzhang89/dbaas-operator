@@ -1,0 +1,17 @@
+apiVersion:  binding.operators.coreos.com/v1alpha1
+kind:        ServiceBinding
+metadata:
+  name:      {{ include "create-and-connect.fullname" . }}
+spec:
+  application:
+    group:                   apps
+    name:                    {{ .Values.appName }}
+    resource:                deployments
+    version:                 v1
+  bindAsFiles:             true
+  detectBindingResources:  true
+  services:
+  - group:    dbaas.redhat.com
+    kind:     DBaaSConnection
+    name:     {{ include "create-and-connect.fullname" . }}
+    version:  v1alpha1
