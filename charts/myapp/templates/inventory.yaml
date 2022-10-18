@@ -1,0 +1,14 @@
+apiVersion: dbaas.redhat.com/v1alpha1
+kind: DBaaSInventory
+metadata:
+  labels:
+    related-to: dbaas-operator
+    type: dbaas-vendor-service
+  namespace: {{ .Values.provider.admNamespace }}
+  name: {{ include "create-and-connect.fullname" . }}
+spec:
+  credentialsRef:
+    name: {{ .Values.provider.secret }}
+  providerRef:
+    name: {{ .Values.provider.type }}
+
