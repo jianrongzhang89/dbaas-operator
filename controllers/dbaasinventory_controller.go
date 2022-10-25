@@ -18,8 +18,8 @@ package controllers
 
 import (
 	"context"
+	"fmt"
 
-	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,6 +27,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+
+	"github.com/RHEcosystemAppEng/dbaas-operator/api/v1alpha1"
 )
 
 // DBaaSInventoryReconciler reconciles a DBaaSInventory object
@@ -38,6 +40,7 @@ type DBaaSInventoryReconciler struct {
 //+kubebuilder:rbac:groups=dbaas.redhat.com,resources=*/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=dbaas.redhat.com,resources=*/finalizers,verbs=update
 //+kubebuilder:rbac:groups="",resources=secrets,verbs=get;patch
+//+kubebuilder:rbac:groups="",resources=serviceAccounts,verbs=get;patch
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -45,6 +48,58 @@ type DBaaSInventoryReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
+	/*
+		   	In this POC, two secrets are stored in hashicorp vault deployed in vault-infra namespace based on Kubernetes Authentication.
+		   	References: https://medium.com/hybrid-cloud-engineering/vault-integration-into-openshift-container-platform-b57c175a79da
+		   Create a service account first.
+		   oc create sa cloud-app -n default
+			1)
+		   vault secrets enable -path=dbaas kv-v2
+		   vault kv put dbaas/credentials \
+		     	orgID=“myogid” \
+		     	privateKey=“myprivatekey” \
+		     	publicKey=“mypublickey”
+		   vault policy write dbaas-operator - <<EOF
+		   path "dbaas/data/credentials" {
+		    	capabilities = ["read"]
+		   }
+		   EOF
+		   vault write auth/kubernetes/role/dbaas-operator \
+		     	bound_service_account_names=dbaas-operator-controller-manager\
+		     	bound_service_account_namespaces=openshift-dbaas-operator \
+		     	policies=dbaas-operator \
+		     	ttl=24h
+		   2)
+		   vault secrets enable -path=ceh kv-v2
+		   vault kv put ceh/database/credentials \
+		     username="db-username" \
+		     password="db-password"
+		   vault policy write cloud-app - <<EOF
+		   path "ceh/data/database/credentials" {
+		     capabilities = ["read"]
+		   }
+		   EOF
+		   vault write auth/kubernetes/role/cloud-app \
+		     bound_service_account_names=cloud-app \
+		     bound_service_account_namespaces=default \
+		     policies=cloud-app \
+		     ttl=24h
+		   The code here demonstrates how the dbaas-operator or provider operators can retrieve the provider credentials
+		   stored in the vault.
+	*/
+	creds, err := v1alpha1.GetSecretFromVault(r.Client, "dbaas-operator", "dbaas/data/credentials", "dbaas-operator-controller-manager", "openshift-dbaas-operator")
+	if err != nil {
+		fmt.Printf("Error retrieving creds from vault:%v", err)
+	} else {
+		fmt.Printf("\nretrieved creds for sa dbaas-operator-controller-manager:%v\n", creds)
+	}
+	creds, err = v1alpha1.GetSecretFromVault(r.Client, "cloud-app", "ceh/data/database/credentials", "cloud-app", "default")
+	if err != nil {
+		fmt.Printf("Error retrieving creds from vault:%v", err)
+	} else {
+		fmt.Printf("\nretrieved creds for sa cloud-app:%v\n", creds)
+	}
+
 	logger := ctrl.LoggerFrom(ctx)
 	var inventory v1alpha1.DBaaSInventory
 	execution := PlatformInstallStart()
