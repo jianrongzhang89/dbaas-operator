@@ -16,13 +16,6 @@ rules:
 - apiGroups:
   - ""
   resources:
-  - serviceAccounts
-  verbs:
-  - get
-  - patch
-- apiGroups:
-  - ""
-  resources:
   - serviceaccounts
   verbs:
   - get
