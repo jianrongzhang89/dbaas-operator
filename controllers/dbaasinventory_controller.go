@@ -95,14 +95,24 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 			}
 			logger.Error(err, "Error updating the DBaaS Inventory resource status", "DBaaS Inventory", inventory)
 			metricLabelErrCdValue = metrics.LabelErrorCdValueErrorUpdatingInventoryStatus
-			return ctrl.Result{}, err
+			return ctrl.Result{Requeue: true}, err
 		}
-		return ctrl.Result{}, nil
+		return ctrl.Result{Requeue: true}, nil
 	}
 
 	if err := r.checkCredsRefLabel(ctx, inventory); err != nil {
 		if errors.IsConflict(err) {
 			return ctrl.Result{Requeue: true}, nil
+		}
+		if errors.IsNotFound(err) {
+			logger.Error(err, "Inventory credentials not found")
+			cond := metav1.Condition{
+				Type:    v1alpha1.DBaaSInventoryReadyType,
+				Status:  metav1.ConditionFalse,
+				Reason:  v1alpha1.DBaaSInventoryCredentialsNotFound,
+				Message: v1alpha1.MsgInventoryCredentialsNotFound,
+			}
+			apimeta.SetStatusCondition(&inventory.Status.Conditions, cond)
 		}
 		return ctrl.Result{}, err
 	}

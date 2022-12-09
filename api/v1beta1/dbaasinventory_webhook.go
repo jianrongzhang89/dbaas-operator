@@ -84,14 +84,19 @@ func validateInventory(inv *DBaaSInventory, oldInv *DBaaSInventory) error {
 		msg := "provider name is immutable for provider accounts"
 		return field.Invalid(field.NewPath("spec").Child("providerRef").Child("name"), inv.Spec.ProviderRef.Name, msg)
 	}
+
+	// Retrieve the provider object
+	provider := &DBaaSProvider{}
+	err := inventoryWebhookAPIClient.Get(context.TODO(), types.NamespacedName{Name: inv.Spec.ProviderRef.Name, Namespace: ""}, provider)
+	if err != nil {
+		return err
+	}
+	if IsDependencyCheckSkipped(inv.ObjectMeta) {
+		return nil
+	}
 	// Retrieve the secret object
 	secret := &corev1.Secret{}
 	if err := WebhookAPIClient.Get(context.TODO(), types.NamespacedName{Name: inv.Spec.DBaaSInventorySpec.CredentialsRef.Name, Namespace: inv.Namespace}, secret); err != nil {
-		return err
-	}
-	// Retrieve the provider object
-	provider := &DBaaSProvider{}
-	if err := WebhookAPIClient.Get(context.TODO(), types.NamespacedName{Name: inv.Spec.ProviderRef.Name, Namespace: ""}, provider); err != nil {
 		return err
 	}
 	// Check RDS
