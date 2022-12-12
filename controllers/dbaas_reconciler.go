@@ -82,6 +82,10 @@ func (r *DBaaSReconciler) createProviderObject(object client.Object, groupVersio
 	})
 	providerObject.SetNamespace(object.GetNamespace())
 	providerObject.SetName(object.GetName())
+	annotations := object.GetAnnotations()
+	if annotations != nil {
+		providerObject.SetAnnotations(annotations)
+	}
 	return &providerObject
 }
 
