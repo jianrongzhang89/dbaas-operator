@@ -262,15 +262,3 @@ type InstanceParameterSpec struct {
 	// Default value for this field.
 	DefaultValue string `json:"defaultValue,omitempty"`
 }
-
-// IsDependencyCheckSkipped check if the dependency validation can be skipped
-func IsDependencyCheckSkipped(meta metav1.ObjectMeta) bool {
-	if len(meta.Annotations) > 0 {
-		if annotation, ok := meta.Annotations[DependencyCheckKey]; ok {
-			if annotation == "yes" {
-				return true
-			}
-		}
-	}
-	return false
-}

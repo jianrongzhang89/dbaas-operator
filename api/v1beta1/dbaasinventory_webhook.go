@@ -87,7 +87,7 @@ func validateInventory(inv *DBaaSInventory, oldInv *DBaaSInventory) error {
 
 	// Retrieve the provider object
 	provider := &DBaaSProvider{}
-	err := inventoryWebhookAPIClient.Get(context.TODO(), types.NamespacedName{Name: inv.Spec.ProviderRef.Name, Namespace: ""}, provider)
+	err := WebhookAPIClient.Get(context.TODO(), types.NamespacedName{Name: inv.Spec.ProviderRef.Name, Namespace: ""}, provider)
 	if err != nil {
 		return err
 	}
@@ -138,4 +138,16 @@ func validateRDS() error {
 		return fmt.Errorf("only one provider account for RDS can exist in a cluster, but there is already a provider account %s created", rdsInventoryList.Items[0].Name)
 	}
 	return nil
+}
+
+// IsDependencyCheckSkipped check if the dependency validation can be skipped
+func IsDependencyCheckSkipped(meta metav1.ObjectMeta) bool {
+	if len(meta.Annotations) > 0 {
+		if annotation, ok := meta.Annotations[DependencyCheckKey]; ok {
+			if annotation == "yes" {
+				return true
+			}
+		}
+	}
+	return false
 }

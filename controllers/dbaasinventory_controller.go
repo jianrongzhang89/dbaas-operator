@@ -107,10 +107,10 @@ func (r *DBaaSInventoryReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 		if errors.IsNotFound(err) {
 			logger.Error(err, "Inventory credentials not found")
 			cond := metav1.Condition{
-				Type:    v1alpha1.DBaaSInventoryReadyType,
+				Type:    v1beta1.DBaaSInventoryReadyType,
 				Status:  metav1.ConditionFalse,
-				Reason:  v1alpha1.DBaaSInventoryCredentialsNotFound,
-				Message: v1alpha1.MsgInventoryCredentialsNotFound,
+				Reason:  v1beta1.DBaaSInventoryCredentialsNotFound,
+				Message: v1beta1.MsgInventoryCredentialsNotFound,
 			}
 			apimeta.SetStatusCondition(&inventory.Status.Conditions, cond)
 		}
